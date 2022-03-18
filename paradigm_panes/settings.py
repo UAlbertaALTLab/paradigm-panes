@@ -12,3 +12,5 @@ MORPHODICT_PARADIGM_SIZES = [
     "full",
     # Variants for linguists go here:
 ]
+
+STRICT_GENERATOR_FST_FILENAME = "generator-gt-norm.hfstol"

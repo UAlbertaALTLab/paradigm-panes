@@ -2,15 +2,17 @@
 Handles paradigm generation.
 """
 
-import settings
-
-import morphodict.analysis
 from manager import (
     ParadigmManager,
     ParadigmManagerWithExplicitSizes,
 )
-from CreeDictionary.utils import shared_res_dir
+from hfst_optimized_lookup import TransducerFile
 
+import settings
+
+# MAYBE ?
+FST_DIR = settings.BASE_DIR / "resources" / "fst"
+SHARED_RES_DIR = settings.BASE_DIR / "res"
 
 def default_paradigm_manager() -> ParadigmManager:
     """
@@ -21,13 +23,14 @@ def default_paradigm_manager() -> ParadigmManager:
       - MORPHODICT_PARADIGM_SIZE_ORDER
     """
 
-    layout_dir = shared_res_dir / "layouts"
+    # TODO combine into 1 dir, since not operating on 5 different resources
+    layout_dir = SHARED_RES_DIR / "layouts"
 
     site_specific_layout_dir = settings.BASE_DIR / "resources" / "layouts"
     if site_specific_layout_dir.exists():
         layout_dir = site_specific_layout_dir
 
-    generator = morphodict.analysis.strict_generator()
+    generator = strict_generator()
 
     if hasattr(settings, "MORPHODICT_PARADIGM_SIZES"):
         return ParadigmManagerWithExplicitSizes(
@@ -37,3 +40,6 @@ def default_paradigm_manager() -> ParadigmManager:
         )
     else:
         return ParadigmManager(layout_dir, generator)
+
+def strict_generator():
+    return TransducerFile(FST_DIR / settings.STRICT_GENERATOR_FST_FILENAME)
