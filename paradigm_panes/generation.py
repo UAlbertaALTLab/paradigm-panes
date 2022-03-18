@@ -24,8 +24,10 @@ def default_paradigm_manager() -> ParadigmManager:
     """
 
     # TODO combine into 1 dir, since not operating on 5 different resources
+    # Shared res dir
     layout_dir = SHARED_RES_DIR / "layouts"
 
+    # site specific resources directory
     site_specific_layout_dir = settings.BASE_DIR / "resources" / "layouts"
     if site_specific_layout_dir.exists():
         layout_dir = site_specific_layout_dir
