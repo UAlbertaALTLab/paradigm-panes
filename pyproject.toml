@@ -1,11 +1,25 @@
 [tool.poetry]
 name = "paradigm-panes"
 version = "0.1.0"
-description = ""
-authors = ["Uladzimir Bondarau <bondarau@ualberta.ca>"]
+description = "Paradigm panes meant to provide layout specification to be reused elsewhere."
+authors = ["Uladzimir Bondarau <bondarau@ualberta.ca>"] # TODO
+license = "Apache License v2.0"
+readme = "README.md"
+homepage = "https://github.com/UAlbertaALTLab/paradigm-panes"
+repository = "https://github.com/UAlbertaALTLab/paradigm-panes"
+keywords = ["paradigm", "panes"]
+classifiers = [
+    # "Framework :: Flake8",
+    # "Topic :: Software Development :: Documentation",
+]
+include = [
+    "LICENSE",
+]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
+more-itertools = "~=8.7.0"
+typing-extensions = "~=3.7"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
