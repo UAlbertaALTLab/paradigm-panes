@@ -1,14 +1,22 @@
 """
     Planning to make it a central place to run paradigm generation
 """
+import settings
+
+from pathlib import Path
 from typing import (Dict, Optional)
 
 from generation import default_paradigm_manager
 from manager import ParadigmManager
 from panes import Paradigm
 
+BASE_DIR = Path(__file__).resolve().parent
+
 def main():
     print("Hello World!")
+
+    set_layouts_dir(BASE_DIR / "resources" / "layouts")
+    set_fst_filepath(BASE_DIR / "resources" / "fst" / "crk-strict-generator.hfstol")
 
     lemma = "amisk"
     paradigm_type = "NA"
@@ -33,6 +41,12 @@ def main():
         paradigm = paradigm_for(paradigm_manager, paradigm_type, lemma, size)
         paradigm = serialize_paradigm(paradigm)
         print(paradigm)
+
+def set_fst_filepath(path):
+    settings.set_fst_filepath(path)
+
+def set_layouts_dir(path):
+    settings.set_layouts_dir(path)
 
 def paradigm_for(paradigm_manager: ParadigmManager, paradigm_type: str, fst_lemma: str, paradigm_size: str) -> Optional[Paradigm]:
     """

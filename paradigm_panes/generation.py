@@ -10,10 +10,6 @@ from hfst_optimized_lookup import TransducerFile
 
 import settings
 
-# MAYBE ?
-FST_DIR = settings.BASE_DIR / "resources" / "fst"
-SHARED_RES_DIR = settings.BASE_DIR / "res"
-
 def default_paradigm_manager() -> ParadigmManager:
     """
     Returns the ParadigmManager instance that loads layouts and FST from the res
@@ -23,14 +19,8 @@ def default_paradigm_manager() -> ParadigmManager:
       - MORPHODICT_PARADIGM_SIZE_ORDER
     """
 
-    # TODO combine into 1 dir, since not operating on 5 different resources
-    # Shared res dir
-    layout_dir = SHARED_RES_DIR / "layouts"
-
-    # site specific resources directory
-    site_specific_layout_dir = settings.BASE_DIR / "resources" / "layouts"
-    if site_specific_layout_dir.exists():
-        layout_dir = site_specific_layout_dir
+    # Directory with paradigm layouts to load
+    layout_dir = settings.get_layouts_dir()
 
     generator = strict_generator()
 
@@ -44,4 +34,4 @@ def default_paradigm_manager() -> ParadigmManager:
         return ParadigmManager(layout_dir, generator)
 
 def strict_generator():
-    return TransducerFile(FST_DIR / settings.STRICT_GENERATOR_FST_FILENAME)
+    return TransducerFile(settings.get_fst_filepath())
