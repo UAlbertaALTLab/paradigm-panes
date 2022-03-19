@@ -3,6 +3,10 @@
 Installable package that produces a paradigm for a given word, given a pointer to paradigm layouts and FST file. Originally
 built for [itwêwina](https://itwewina.altlab.app/).
 
+# PyPi Package
+
+Latest version of the package posted to PyPi: [paradigm-panes 0.2.1](https://pypi.org/project/paradigm-panes/)
+
 # Example Usage:
 
 ```
