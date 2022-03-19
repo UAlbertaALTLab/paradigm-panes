@@ -7,14 +7,13 @@ from pathlib import Path
 import pytest
 from more_itertools import first, ilen
 
-from paradigm_panes import settings
 import paradigm_panes
 
 BASE_DIR = Path(__file__).resolve().parent
 
 def test_paradigm_sizes_are_ordered(pardigm_gen: paradigm_panes.PaneGenerator):
     assert isinstance(pardigm_gen, paradigm_panes.PaneGenerator)
-    assert settings.is_setup_complete()
+    assert paradigm_panes.settings.is_setup_complete()
 
 
 @pytest.mark.parametrize(
@@ -90,8 +89,8 @@ def test_generates_na_paradigm_wrong_size(pardigm_gen) -> None:
 
 @pytest.fixture
 def pardigm_gen() -> paradigm_panes.PaneGenerator:
-    settings.set_layouts_dir(BASE_DIR / "test_resources" / "layouts")
-    settings.set_fst_filepath(BASE_DIR / "test_resources" / "fst" / "crk-strict-generator.hfstol")
+    paradigm_panes.settings.set_layouts_dir(BASE_DIR / "test_resources" / "layouts")
+    paradigm_panes.settings.set_fst_filepath(BASE_DIR / "test_resources" / "fst" / "crk-strict-generator.hfstol")
 
     pardigm_gen = paradigm_panes.PaneGenerator()
     return pardigm_gen

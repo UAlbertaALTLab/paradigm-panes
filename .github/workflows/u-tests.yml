@@ -1,0 +1,26 @@
+name: Unit-tests
+
+on: [push]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v1
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install HFST
+        run: sudo apt-get install -y hfst
+
+      - name: Run Poetry image
+        uses: abatilo/actions-poetry@v2.0.0
+      - name: Install package deps
+        run: poetry install
+      - name: Run Unit Tests
+        run: pytest
