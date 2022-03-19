@@ -126,16 +126,15 @@ class PaneGenerator:
         settings.set_layouts_dir(path)
 
 def main():
-    pange_generator = PaneGenerator()
-    pange_generator.set_layouts_dir(BASE_DIR / "resources" / "layouts")
-    pange_generator.set_fst_filepath(BASE_DIR / "resources" / "fst" / "crk-strict-generator.hfstol")
+    pane_generator = PaneGenerator()
+    pane_generator.set_layouts_dir(BASE_DIR / "resources" / "layouts")
+    pane_generator.set_fst_filepath(BASE_DIR / "resources" / "fst" / "crk-strict-generator.hfstol")
 
     lemma = "amisk"
     paradigm_type = "NA"
-    specified_size = "notexistentsizetype"
-    # specified_size = "full"
+    specified_size = "full"
 
-    pange_generator.generate_pane(lemma, paradigm_type, specified_size)
+    pane_generator.generate_pane(lemma, paradigm_type, specified_size)
 
 if __name__ == "__main__":
     main()

@@ -72,7 +72,7 @@ def set_tag_style(tag_style: str) -> None:
     global TAG_STYLE
     TAG_STYLE = tag_style
 
-def get_layouts_dir() -> str:
+def get_tag_style() -> str:
     """
     Get tag style
     """
