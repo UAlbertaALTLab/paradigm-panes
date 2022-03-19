@@ -13,6 +13,7 @@ MORPHODICT_PARADIGM_SIZES = [
 
 STRICT_GENERATOR_FST_FILEPATH = ""
 LAYOUTS_DIR = ""
+TAG_STYLE = "Plus"
 
 class FileDoesNotMatch(Exception):
     """
@@ -61,3 +62,18 @@ def is_setup_complete():
     Confirms that both FST and Layouts folder are configured and valid.
     """
     return Path(LAYOUTS_DIR).is_dir() and (Path(STRICT_GENERATOR_FST_FILEPATH).is_file() and Path(STRICT_GENERATOR_FST_FILEPATH).match("*.hfstol"))
+
+
+# In case all_analysis_template_tags() will be need to be called from panes package
+def set_tag_style(tag_style: str) -> None:
+    """
+    Set tag style
+    """
+    global TAG_STYLE
+    TAG_STYLE = tag_style
+
+def get_layouts_dir() -> str:
+    """
+    Get tag style
+    """
+    return TAG_STYLE
