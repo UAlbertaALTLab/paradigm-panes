@@ -25,7 +25,7 @@ built for [itwêwina](https://itwewina.altlab.app/).
 - `set_tag_style(path)` specifies template rendering type.
 
 > Available tag styles:
-
+>
 > 1.  "Plus"
 > 2.  "Bracket"
 
