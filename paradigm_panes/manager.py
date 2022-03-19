@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import Collection, Iterable, Optional, Protocol
 
-import settings
+from . import settings
 
 from panes import Paradigm, ParadigmLayout
 
