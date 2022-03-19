@@ -5,13 +5,15 @@ Integration tests for paradigms in the itwêwina (crkeng) dictionary.
 from pathlib import Path
 
 import pytest
-from more_itertools import first, ilen
 
 import paradigm_panes
 
 BASE_DIR = Path(__file__).resolve().parent
 
-def test_paradigm_sizes_are_ordered(pardigm_gen: paradigm_panes.PaneGenerator):
+def test_paradigm_gen_setup(pardigm_gen: paradigm_panes.PaneGenerator):
+    """
+    Checks setup is correct and local imports (from paradigm_panes.init) work correctly
+    """
     assert isinstance(pardigm_gen, paradigm_panes.PaneGenerator)
     assert paradigm_panes.settings.is_setup_complete()
 
@@ -31,6 +33,10 @@ def test_paradigm_sizes_are_ordered(pardigm_gen: paradigm_panes.PaneGenerator):
     ],
 )
 def test_paradigm(pardigm_gen, name, lemma, examples: list[str]):
+    """
+    Test paradigm panes generates based on default size, lemma and paradirm name and
+    matches an extract of data above
+    """
     paradigm = pardigm_gen.generate_pane(lemma=lemma, paradigm_type=name)
 
     for form in examples:
@@ -89,6 +95,9 @@ def test_generates_na_paradigm_wrong_size(pardigm_gen) -> None:
 
 @pytest.fixture
 def pardigm_gen() -> paradigm_panes.PaneGenerator:
+    """
+    Setup resources and create PaneGenerator
+    """
     paradigm_panes.settings.set_layouts_dir(BASE_DIR / "test_resources" / "layouts")
     paradigm_panes.settings.set_fst_filepath(BASE_DIR / "test_resources" / "fst" / "crk-strict-generator.hfstol")
 
