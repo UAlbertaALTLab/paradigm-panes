@@ -5,8 +5,9 @@ import re
 from pathlib import Path
 from typing import Collection, Iterable, Optional, Protocol
 
-from .panes import Paradigm, ParadigmLayout
-from . import settings
+import settings
+
+from panes import Paradigm, ParadigmLayout
 
 # I would *like* a singleton for this, but, currently, it interacts poorly with mypy :/
 ONLY_SIZE = "<only-size>"
@@ -108,7 +109,7 @@ class ParadigmManager:
 
         Does nothing if the directory does not exist.
         """
-        if not (Path(path)).is_dir():
+        if not Path(path).exists():
             logger.debug("No layouts found in %s", path)
             return
 
@@ -247,13 +248,13 @@ def _load_all_layouts_in_directory(path: Path):
     Yields (paradigm, size, layout) tuples from the given directory. Immediate
     subdirectories are assumed to be paradigms with multiple size options.
     """
-    assert path.is_dir()
+    assert Path(path).is_dir()
 
-    for filename in path.iterdir():
-        if filename.is_dir():
+    for filename in Path(path).iterdir():
+        if Path(filename).is_dir():
             yield from _load_all_sizes_for_paradigm(filename)
-        elif filename.match("*.tsv"):
-            yield filename.stem, ONLY_SIZE, _load_layout_file(filename)
+        elif Path(filename).match("*.tsv"):
+            yield Path(filename).stem, ONLY_SIZE, _load_layout_file(filename)
 
 
 def _load_all_sizes_for_paradigm(directory: Path):

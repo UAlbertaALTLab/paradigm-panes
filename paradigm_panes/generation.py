@@ -2,10 +2,7 @@
 Handles paradigm generation.
 """
 
-from .manager import (
-    ParadigmManager,
-    ParadigmManagerWithExplicitSizes,
-)
+from .manager import *
 from . import settings
 
 from hfst_optimized_lookup import TransducerFile
