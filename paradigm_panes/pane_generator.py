@@ -4,7 +4,7 @@
 # import settings
 
 from pathlib import Path
-from typing import (Dict, Optional)
+from typing import (Collection, Dict, Optional)
 
 from .generation import default_paradigm_manager
 from .manager import ParadigmManager
@@ -34,13 +34,18 @@ class PaneGenerator:
 
                 paradigm = self.paradigm_for(paradigm_manager, paradigm_type, lemma, size)
                 serialized_paradigm = self.serialize_paradigm(paradigm)
-                print(serialized_paradigm)
+                # print(serialized_paradigm)
 
                 return serialized_paradigm
             else:
                 raise Exception("Paradigm layout specification is missing.")
         else:
             raise Exception("FST and Layouts resources are not configured correctly.")
+
+    def all_analysis_template_tags(self, paradigm_type: str) -> Collection[tuple]:
+        pg = default_paradigm_manager()
+        all_template_tags = pg.all_analysis_template_tags(paradigm_type)
+        return all_template_tags
 
     def paradigm_for(self, paradigm_manager: ParadigmManager, paradigm_type: str, fst_lemma: str, paradigm_size: str) -> Optional[Paradigm]:
         """
@@ -120,11 +125,14 @@ class PaneGenerator:
 
         return {"panes": panes}
 
-    def set_fst_filepath(self, path) -> None:
+    def set_fst_filepath(self, path: str) -> None:
         settings.set_fst_filepath(path)
 
-    def set_layouts_dir(self, path) -> None:
+    def set_layouts_dir(self, path: str) -> None:
         settings.set_layouts_dir(path)
+
+    def set_tag_style(self, style: str) -> None:
+        settings.set_tag_style(style)
 
 def main():
     pane_generator = PaneGenerator()

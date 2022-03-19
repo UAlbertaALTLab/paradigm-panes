@@ -138,7 +138,7 @@ class ParadigmManager:
             for template in layout.generate_fst_analyses("${lemma}"):
                 prefix, suffix = self._LITERAL_LEMMA_RE.split(template)
 
-                if settings.MORPHODICT_TAG_STYLE == "Plus":
+                if settings.get_tag_style() == "Plus":
                     prefix_tags = prefix.split("+")
                     assert (
                         prefix_tags[-1] == ""
@@ -149,10 +149,10 @@ class ParadigmManager:
                         tuple(t + "+" for t in prefix_tags[:-1]),
                         tuple("+" + t for t in suffix_tags[1:]),
                     )
-                elif settings.MORPHODICT_TAG_STYLE == "Bracket":
+                elif settings.get_tag_style() == "Bracket":
                     ret[template] = (split_brackets(prefix), split_brackets(suffix))
                 else:
-                    raise Exception(f"Unsupported {settings.MORPHODICT_TAG_STYLE=!r}")
+                    raise Exception(f"Unsupported {settings.get_tag_style()=!r}")
         return ret.values()
 
     def _inflect(self, layout: ParadigmLayout, lemma: str) -> Paradigm:

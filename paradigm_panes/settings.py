@@ -68,6 +68,10 @@ def is_setup_complete():
 def set_tag_style(tag_style: str) -> None:
     """
     Set tag style
+
+    Available tags:
+        1. "Plus"
+        2. "Bracket"
     """
     global TAG_STYLE
     TAG_STYLE = tag_style
