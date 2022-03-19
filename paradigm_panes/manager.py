@@ -7,7 +7,7 @@ from typing import Collection, Iterable, Optional, Protocol
 
 from . import settings
 
-from panes import Paradigm, ParadigmLayout
+from .panes import Paradigm, ParadigmLayout
 
 # I would *like* a singleton for this, but, currently, it interacts poorly with mypy :/
 ONLY_SIZE = "<only-size>"
