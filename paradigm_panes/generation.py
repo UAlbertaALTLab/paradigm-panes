@@ -2,13 +2,14 @@
 Handles paradigm generation.
 """
 
-from manager import (
+from .manager import (
     ParadigmManager,
     ParadigmManagerWithExplicitSizes,
 )
+from . import settings
+
 from hfst_optimized_lookup import TransducerFile
 
-import settings
 
 def default_paradigm_manager() -> ParadigmManager:
     """

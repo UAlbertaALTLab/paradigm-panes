@@ -5,9 +5,8 @@ import re
 from pathlib import Path
 from typing import Collection, Iterable, Optional, Protocol
 
-import settings
-
-from panes import Paradigm, ParadigmLayout
+from .panes import Paradigm, ParadigmLayout
+from . import settings
 
 # I would *like* a singleton for this, but, currently, it interacts poorly with mypy :/
 ONLY_SIZE = "<only-size>"
@@ -109,7 +108,7 @@ class ParadigmManager:
 
         Does nothing if the directory does not exist.
         """
-        if not path.exists():
+        if not (Path(path)).is_dir():
             logger.debug("No layouts found in %s", path)
             return
 

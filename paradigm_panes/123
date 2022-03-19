@@ -1,0 +1,7 @@
+import paradigm_panes
+pg = paradigm_panes.PaneGenerator()
+lemma = "amisk"
+p_type = "NA"
+pg.set_layouts_dir("/home/ubuntu/cmput401/paradigm-panes/paradigm_panes/resources/layouts")
+pg.set_fst_filepath("/home/ubuntu/cmput401/paradigm-panes/paradigm_panes/resources/fst/generator-gt-norm.hfstol")
+pg.generate_pane(lemma, p_type)

@@ -1,16 +1,17 @@
 """
     Planning to make it a central place to run paradigm generation
 """
-import settings
+# import settings
 
 from pathlib import Path
 from typing import (Dict, Optional)
 
-from generation import default_paradigm_manager
-from manager import ParadigmManager
-from panes import Paradigm
+from .generation import default_paradigm_manager
+from .manager import ParadigmManager
+from .panes import Paradigm
+from . import settings
 
-# TODO remove base dir when finish "debugging"
+# TODO remove base dir when finish "debugging", and main
 BASE_DIR = Path(__file__).resolve().parent
 
 class PaneGenerator:
