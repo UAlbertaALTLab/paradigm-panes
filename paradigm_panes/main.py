@@ -13,40 +13,42 @@ from panes import Paradigm
 BASE_DIR = Path(__file__).resolve().parent
 
 def main():
-    print("Hello World!")
-
     set_layouts_dir(BASE_DIR / "resources" / "layouts")
-    set_fst_filepath(BASE_DIR / "resources" / "fst" / "crk-strict-generator.hfstol")
+    # set_fst_filepath(BASE_DIR / "resources" / "fst" / "crk-strict-generator.hfstol")
 
     lemma = "amisk"
     paradigm_type = "NA"
     specified_size = "notexistentsizetype"
     # specified_size = "full"
 
-    if paradigm_type is not None:
-        paradigm_manager = default_paradigm_manager()
-        sizes = list(paradigm_manager.sizes_of(paradigm_type))
-        if "basic" in sizes:
-            default_size = "basic"
-        else:
-            default_size = sizes[0]
+    generate_pane(lemma, paradigm_type, specified_size)
 
-        if len(sizes) <= 1:
-            size = default_size
-        else:
-            size = specified_size
-            if size not in sizes:
+def generate_pane(lemma: str, paradigm_type: str, specified_size: Optional[str] = None):
+    if (settings.is_setup_complete()):
+        if paradigm_type is not None:
+            paradigm_manager = default_paradigm_manager()
+            sizes = list(paradigm_manager.sizes_of(paradigm_type))
+            if "basic" in sizes:
+                default_size = "basic"
+            else:
+                default_size = sizes[0]
+
+            if len(sizes) <= 1:
                 size = default_size
+            else:
+                size = specified_size
+                if size not in sizes:
+                    size = default_size
 
-        paradigm = paradigm_for(paradigm_manager, paradigm_type, lemma, size)
-        paradigm = serialize_paradigm(paradigm)
-        print(paradigm)
+            paradigm = paradigm_for(paradigm_manager, paradigm_type, lemma, size)
+            serialized_paradigm = serialize_paradigm(paradigm)
+            print(serialized_paradigm)
 
-def set_fst_filepath(path):
-    settings.set_fst_filepath(path)
-
-def set_layouts_dir(path):
-    settings.set_layouts_dir(path)
+            return serialized_paradigm
+        else:
+            raise Exception("Paradigm layout specification is missing.")
+    else:
+        raise Exception("FST and Layouts resources are not configured correctly.")
 
 def paradigm_for(paradigm_manager: ParadigmManager, paradigm_type: str, fst_lemma: str, paradigm_size: str) -> Optional[Paradigm]:
     """
@@ -127,6 +129,12 @@ def serialize_paradigm(paradigm: Paradigm) -> Dict[str, any]:
         panes.append({"tr_rows": tr_rows})
 
     return {"panes": panes}
+
+def set_fst_filepath(path) -> None:
+    settings.set_fst_filepath(path)
+
+def set_layouts_dir(path) -> None:
+    settings.set_layouts_dir(path)
 
 if __name__ == "__main__":
     main()

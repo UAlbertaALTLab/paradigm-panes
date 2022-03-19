@@ -14,22 +14,28 @@ MORPHODICT_PARADIGM_SIZES = [
 ]
 
 # TODO remove default and error check if empty
-STRICT_GENERATOR_FST_FILEPATH = BASE_DIR / "resources" / "fst" / "generator-gt-norm.hfstol"
-LAYOUTS_DIR = BASE_DIR / "resources" / "layouts"
+STRICT_GENERATOR_FST_FILEPATH = ""
+LAYOUTS_DIR = ""
 
 class FileDoesNotMatch(Exception):
     """
     Raised when file cannot be found or does not match .hfstol extension
     """
 
-def set_fst_filepath(filepath):
+def set_fst_filepath(filepath: str) -> None:
+    """
+    Set a path to FST file
+    """
     if (Path(filepath).is_file() and Path(filepath).match("*.hfstol")):
         global STRICT_GENERATOR_FST_FILEPATH
         STRICT_GENERATOR_FST_FILEPATH = filepath
     else:
         raise FileDoesNotMatch(f"file {filepath!r} does not exist or does not end in \".hfstol\".")
 
-def get_fst_filepath():
+def get_fst_filepath() -> str:
+    """
+    Get a path to FST file
+    """
     return STRICT_GENERATOR_FST_FILEPATH
 
 class DirectoryDoesNotExist(Exception):
@@ -37,12 +43,24 @@ class DirectoryDoesNotExist(Exception):
     Raised when directory with paradigm layouts is missing
     """
 
-def set_layouts_dir(dir_path):
+def set_layouts_dir(dir_path: str) -> None:
+    """
+    Set a directory with paradigm layouts
+    """
     if (Path(dir_path).is_dir()):
         global LAYOUTS_DIR
         LAYOUTS_DIR = dir_path
     else:
         raise DirectoryDoesNotExist(f"Directory {dir_path!r} does not exist.")
 
-def get_layouts_dir():
+def get_layouts_dir() -> str:
+    """
+    Get a directory with paradigm layouts
+    """
     return LAYOUTS_DIR
+
+def is_setup_complete():
+    """
+    Confirms that both FST and Layouts folder are configured and valid.
+    """
+    return Path(LAYOUTS_DIR).is_dir() and (Path(STRICT_GENERATOR_FST_FILEPATH).is_file() and Path(STRICT_GENERATOR_FST_FILEPATH).match("*.hfstol"))
