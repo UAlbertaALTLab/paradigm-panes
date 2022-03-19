@@ -28,7 +28,7 @@ def set_fst_filepath(filepath: str) -> None:
         global STRICT_GENERATOR_FST_FILEPATH
         STRICT_GENERATOR_FST_FILEPATH = filepath
     else:
-        raise FileDoesNotMatch(f"file {filepath!r} does not exist or does not end in \".hfstol\".")
+        raise FileDoesNotMatch(f"file {filepath.as_posix()!r} does not exist or does not end in \".hfstol\".")
 
 def get_fst_filepath() -> str:
     """

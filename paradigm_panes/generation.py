@@ -2,6 +2,7 @@
 Handles paradigm generation.
 """
 
+import string
 from .manager import *
 from . import settings
 
@@ -32,4 +33,13 @@ def default_paradigm_manager() -> ParadigmManager:
         return ParadigmManager(layout_dir, generator)
 
 def strict_generator():
-    return TransducerFile(settings.get_fst_filepath())
+    path = settings.get_fst_filepath()
+    print(path, "pathhhh")
+    try:
+        return TransducerFile(path)
+    except Exception as error:
+        print("\\" + str(error).split(":")[0] + "\\")
+        if (str(error).split(":")[0] == 'Transducer not found'):
+            raise Exception(str(error).split(":")[0] + f' in \"{path}\"')
+        else:
+            raise Exception(str(error))
