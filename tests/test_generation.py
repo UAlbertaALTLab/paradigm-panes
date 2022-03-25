@@ -18,7 +18,6 @@ def test_default_paradigm_fails_with_empty_fst():
         generation.default_paradigm_manager()
         assert False
     except Exception as e:
-        print(str(e))
         if (str(e) == "Transducer not found in \"\""):
             assert True
         else:
@@ -35,7 +34,6 @@ def test_default_paradigm_fails_with_invalid_fst():
         assert False
     except settings.FileDoesNotMatch as e:
         assert True
-        print("file '{fst_path}' does not exist or does not end in \".hfstol\".")
         if (str(e) == f'file \'{fst_path}\' does not exist or does not end in \".hfstol\".'):
             assert True
         else:

@@ -10,6 +10,7 @@ from .generation import default_paradigm_manager
 from .manager import ParadigmManager
 from .panes import Paradigm
 from . import settings
+import json
 
 class PaneGenerator:
     def generate_pane(self, lemma: str, paradigm_type: str, specified_size: Optional[str] = None):
@@ -31,10 +32,9 @@ class PaneGenerator:
 
                 paradigm = self.paradigm_for(paradigm_manager, paradigm_type, lemma, size)
 
-                # TODO is serialized?
-                # serialized_paradigm = self.serialize_paradigm(paradigm)
+                serialized_paradigm = self.serialize_paradigm(paradigm)
 
-                return paradigm
+                return serialized_paradigm
             else:
                 raise Exception("Paradigm layout specification is missing.")
         else:
@@ -87,66 +87,59 @@ class PaneGenerator:
         """
         settings.set_tag_style(style)
 
-    # # TODO figure out if we want to serialize from the package
-    # def serialize_paradigm(self, paradigm: Paradigm) -> Dict[str, any]:
-    #     """
-    #     Serializes a Paradigm object as a dictionary
+    def serialize_paradigm(self, paradigm: Paradigm) -> Dict[str, any]:
+        """
+        Serializes a Paradigm object as a dictionary
 
-    #     :param paradigm: the paradigm to be serialized
-    #     :return: dictionary representation
-    #     """
-    #     panes = []
+        :param paradigm: the paradigm to be serialized
+        :return: dictionary representation
+        """
+        panes = []
 
-    #     for pane in (paradigm.panes or []):
+        if paradigm is None:
+            return {"panes": panes}
 
-    #         tr_rows = []
-    #         for row in (pane.rows or []):   # potential problem: we don't distinguish between compound rows and non-compound rows. this might be a problem for the frontend.
-    #             if row.is_header:
-    #                 tr_rows.append({
-    #                     "is_header": True,
-    #                     "label": row.fst_tags,
-    #                     "cells": []
-    #                 })
-    #             else:
-    #                 cells = []
-    #                 for cell in (row.cells or []):
-    #                     cell_data = {
-    #                         "should_suppress_output": cell.should_suppress_output,
-    #                         "is_label": cell.is_label,
-    #                         "is_inflection": cell.is_inflection,
-    #                         "is_missing": cell.is_missing,
-    #                         "is_empty": cell.is_empty
-    #                     }
+        for pane in (paradigm.panes or []):
 
-    #                     if cell_data["is_label"]:
-    #                         cell_data["label_for"] = cell.label_for
-    #                         cell_data["label"] = cell.fst_tags
+            tr_rows = []
+            for row in (pane.rows or []):
+                if row.is_header:
+                    tr_rows.append({
+                        "is_header": True,
+                        "label": row.fst_tags,
+                        "cells": []
+                    })
+                else:
+                    cells = []
+                    for cell in (row.cells or []):
+                        cell_data = {
+                            "should_suppress_output": cell.should_suppress_output,
+                            "is_label": cell.is_label,
+                            "is_inflection": cell.is_inflection,
+                            "is_missing": cell.is_missing,
+                            "is_empty": cell.is_empty
+                        }
 
-    #                         if type(cell_data["label_for"]) != str:  # if cell.label_for was never instantiated
-    #                             cell_data["label_for"] = ""
-    #                         if cell_data["label_for"] == "row":
-    #                             cell_data["row_span"] = cell.row_span
+                        if cell_data["is_label"]:
+                            cell_data["label_for"] = cell.label_for
+                            cell_data["label"] = json.dumps(cell.fst_tags)
 
-    #                     elif cell_data["is_inflection"] and not cell_data["is_missing"]:
-    #                         # TODO add orth
-    #                         # cell_data["inflection"] = orth(cell.inflection)
-    #                         cell_data["inflection"] = cell.inflection
-    #                         cell_data["recording"] = cell.recording
+                            if type(cell_data["label_for"]) != str:  # if cell.label_for was never instantiated
+                                cell_data["label_for"] = ""
+                            if cell_data["label_for"] == "row":
+                                cell_data["row_span"] = cell.row_span
 
-    #                         # TODO check wordforms?
-    #                         # if cell.inflection in observed_wordforms():
-    #                         #     cell_data["observed"] = True
-    #                         # else:
-    #                         #     cell_data["observed"] = False
+                        elif cell_data["is_inflection"] and not cell_data["is_missing"]:
+                            cell_data["inflection"] = cell.inflection
 
-    #                     cells.append(cell_data)
+                        cells.append(cell_data)
 
-    #                 tr_rows.append({
-    #                     "is_header": False,
-    #                     "label": None,  # shouldn't be used.
-    #                     "cells": cells
-    #                 })
+                    tr_rows.append({
+                        "is_header": False,
+                        "label": None,  # shouldn't be used.
+                        "cells": cells
+                    })
 
-    #         panes.append({"tr_rows": tr_rows})
+            panes.append({"tr_rows": tr_rows})
 
-    #     return {"panes": panes}
+        return {"panes": panes}

@@ -3,15 +3,13 @@ name = "paradigm-panes"
 version = "0.2.1"
 description = "Paradigm panes meant to provide layout specification to be reused elsewhere."
 authors = ["Uladzimir Bondarau <bondarau@ualberta.ca>"] # TODO
+maintainers = [""]
 license = "Apache License v2.0"
 readme = "README.md"
 homepage = "https://github.com/UAlbertaALTLab/paradigm-panes"
 repository = "https://github.com/UAlbertaALTLab/paradigm-panes"
 keywords = ["paradigm", "panes"]
-classifiers = [
-    # "Framework :: Flake8",
-    # "Topic :: Software Development :: Documentation",
-]
+classifiers = []
 include = [
     "LICENSE",
 ]
