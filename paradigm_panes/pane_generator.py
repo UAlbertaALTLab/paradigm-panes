@@ -13,24 +13,12 @@ from . import settings
 import json
 
 class PaneGenerator:
-    def generate_pane(self, lemma: str, paradigm_type: str, specified_size: Optional[str] = None):
+    def generate_pane(self, lemma: str, paradigm_type: str, specified_size: Optional[str] = None) -> Dict[str, any]:
+        """
+        Validate given parameters and set options (settings) and return serialized pane of the paradigm"""
         if (settings.is_setup_complete()):
             if paradigm_type is not None:
-                paradigm_manager = default_paradigm_manager()
-                sizes = list(paradigm_manager.sizes_of(paradigm_type))
-                if "basic" in sizes:
-                    default_size = "basic"
-                else:
-                    default_size = sizes[0]
-
-                if len(sizes) <= 1:
-                    size = default_size
-                else:
-                    size = specified_size
-                    if size not in sizes:
-                        size = default_size
-
-                paradigm = self.paradigm_for(paradigm_manager, paradigm_type, lemma, size)
+                paradigm = self._crete_paradigm(lemma, paradigm_type, specified_size)
 
                 serialized_paradigm = self.serialize_paradigm(paradigm)
 
@@ -39,6 +27,30 @@ class PaneGenerator:
                 raise Exception("Paradigm layout specification is missing.")
         else:
             raise Exception("FST and Layouts resources are not configured correctly.")
+
+    def _crete_paradigm(self, lemma: str, paradigm_type: str, specified_size: Optional[str] = None) -> Paradigm:
+        """
+        Create the paradigm as a built-in type and return.
+        Check given optional size, and use default otherwise.
+        """
+        paradigm_manager = default_paradigm_manager()
+        sizes = list(paradigm_manager.sizes_of(paradigm_type))
+        if "basic" in sizes:
+            default_size = "basic"
+        else:
+            default_size = sizes[0]
+
+        if len(sizes) <= 1:
+            size = default_size
+        else:
+            size = specified_size
+            if size not in sizes:
+                size = default_size
+
+        paradigm = self.paradigm_for(paradigm_manager, paradigm_type, lemma, size)
+
+        return paradigm
+
 
     def all_analysis_template_tags(self, paradigm_type: str) -> Collection[tuple]:
         """
@@ -106,7 +118,7 @@ class PaneGenerator:
                 if row.is_header:
                     tr_rows.append({
                         "is_header": True,
-                        "label": row.fst_tags,
+                        "label": json.dumps(row.fst_tags),
                         "cells": []
                     })
                 else:

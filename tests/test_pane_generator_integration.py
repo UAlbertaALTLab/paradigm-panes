@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 import paradigm_panes
+from .test_resources import serialized_response
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -35,9 +36,9 @@ def test_paradigm_gen_setup(pardigm_gen: paradigm_panes.PaneGenerator):
 def test_paradigm(pardigm_gen, name, lemma, examples: list[str]):
     """
     Test paradigm panes generates based on default size, lemma and paradirm name and
-    matches an extract of data above
+    matches an extract of data above. Checks the paradigm itself, not serialization.
     """
-    paradigm = pardigm_gen.generate_pane(lemma=lemma, paradigm_type=name)
+    paradigm = pardigm_gen._crete_paradigm(lemma=lemma, paradigm_type=name)
 
     for form in examples:
         assert paradigm.contains_wordform(form)
@@ -53,12 +54,39 @@ def test_generates_na_paradigm_default_size(pardigm_gen) -> None:
     inflections = ["minôsa", "minôsak", "niminôs"]
     inflections_full = ["ominôsiyiwa", "kiminôsiwâwak", "minôsinâhk"]
 
-    paradigm = pardigm_gen.generate_pane(lemma, word_class)
+    paradigm = pardigm_gen._crete_paradigm(lemma, word_class)
 
     for form in inflections:
         assert paradigm.contains_wordform(form)
     for form in inflections_full:
         assert not paradigm.contains_wordform(form)
+
+def test_generates_wrong_spec_paradigm_missing(pardigm_gen) -> None:
+    """
+    Generate a paradigm with incorrect paradigm type for a lemma+word class;
+    As a result the pane should be missing.
+    """
+    lemma = "minôs"
+    word_class = "VAI"
+    inflections = ["minôsa", "minôsak", "niminôs"]
+
+    paradigm = pardigm_gen._crete_paradigm(lemma, word_class)
+
+    for form in inflections:
+        assert not paradigm.contains_wordform(form)
+
+def test_serialize_na_paradigm_default_size(pardigm_gen) -> None:
+    """
+    Verify the serialization goes as planned
+    """
+    lemma = "amisk"
+    word_class = "NA"
+
+    serialized_paradigm = pardigm_gen.generate_pane(lemma, word_class)
+    std_resp = serialized_response.amisk_serialized()
+
+    assert serialized_paradigm == std_resp
+
 
 def test_generates_na_paradigm_full_size(pardigm_gen) -> None:
     """
@@ -70,7 +98,7 @@ def test_generates_na_paradigm_full_size(pardigm_gen) -> None:
     inflections = ["minôsa", "minôsak", "niminôs", "ominôsiyiwa", "kiminôsiwâwak", "minôsinâhk"]
 
     size = "full"
-    paradigm = pardigm_gen.generate_pane(lemma, word_class, size)
+    paradigm = pardigm_gen._crete_paradigm(lemma, word_class, size)
 
     for form in inflections:
         assert paradigm.contains_wordform(form)
@@ -86,7 +114,7 @@ def test_generates_na_paradigm_wrong_size(pardigm_gen) -> None:
     inflections_full = ["ominôsiyiwa", "kiminôsiwâwak", "minôsinâhk"]
 
     size = "wrongsize"
-    paradigm = pardigm_gen.generate_pane(lemma, word_class, size)
+    paradigm = pardigm_gen._crete_paradigm(lemma, word_class, size)
 
     for form in inflections:
         assert paradigm.contains_wordform(form)
