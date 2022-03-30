@@ -41,7 +41,7 @@ python
 
 - ## PaneGenerator()
 
-  For successful execution, the package needs a link to resources as described below. To manage different links and use the panes generator more effectively, the package provides PaneGEnerator class that allows managing settings and executing main functionality:
+  For successful execution, the package needs a link to resources as described below. To manage different links and use the panes generator more effectively, the package provides PaneGenerator class that allows managing settings and executing main functionality:
 
   ```
   >>> pane_generator = paradigm_panes.PaneGenerator()
@@ -128,7 +128,18 @@ Size is optional to paradigm generation; by default a base size (or first availa
 
 # Testing
 
-The package has some unit and integrations test, in order to run those use:
+To run the tests you need to install required dependencies, it is easier by using a virtual environment like this:
+
+```
+>>> # Set up virutal env
+>>> virtualenv venv --python=python3.9
+>>> source venv/bin/activate
+>>>
+>>> # Install dependencies
+>>> poetry install
+```
+
+Once the dependencies are installed you can run tests by calling pytest.
 
 ```
 >>> pytest
@@ -136,7 +147,7 @@ The package has some unit and integrations test, in order to run those use:
 
 # Release
 
-Package version number is sotred in pyproject.toml. With every release to PyPi the version needs to be updated. \
+Package version number is sorted in pyproject.toml. With every release to PyPi the version needs to be updated. \
 Build the package from the main directory before publishing it:
 
 ```

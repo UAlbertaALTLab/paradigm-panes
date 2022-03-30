@@ -27,7 +27,7 @@ def test_default_paradigm_fails_with_invalid_fst():
     """
     Generation does not run with invalid FST and throws appropriate error message
     """
-    fst_path = BASE_DIR / "test_resources" / "fst" / "tottaly_missing_fst.hfstol"
+    fst_path = BASE_DIR / "test_resources" / "fst" / "totally_missing_fst.hfstol"
     try:
         settings.set_fst_filepath(fst_path)
         generation.default_paradigm_manager()
