@@ -64,9 +64,15 @@ class PaneGenerator:
         building a paradigm table, not the results of analyzing some input
         string.
         """
-        pg = default_paradigm_manager()
-        all_template_tags = pg.all_analysis_template_tags(paradigm_type)
-        return all_template_tags
+        if (settings.is_setup_complete()):
+            if paradigm_type is not None:
+                pg = default_paradigm_manager()
+                all_template_tags = pg.all_analysis_template_tags(paradigm_type)
+                return all_template_tags
+            else:
+                raise Exception("Paradigm layout specification is missing.")
+        else:
+            raise Exception("FST and Layouts resources are not configured correctly.")
 
     def paradigm_for(self, paradigm_manager: ParadigmManager, paradigm_type: str, fst_lemma: str, paradigm_size: str) -> Optional[Paradigm]:
         """

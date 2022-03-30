@@ -2,7 +2,7 @@
 Handles paradigm generation.
 """
 
-import string
+from pathlib import Path
 from .manager import *
 from . import settings
 
@@ -19,7 +19,7 @@ def default_paradigm_manager() -> ParadigmManager:
     """
 
     # Directory with paradigm layouts to load
-    layout_dir = settings.get_layouts_dir()
+    layout_dir = Path(settings.get_layouts_dir())
 
     generator = strict_generator()
 

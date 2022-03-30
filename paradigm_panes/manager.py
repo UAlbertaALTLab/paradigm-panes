@@ -92,7 +92,7 @@ class ParadigmManager:
         sizes = list(self.sizes_of(paradigm_name))
         return sizes[0]
 
-    def _layout_sizes_or_raise(self, paradigm_name) -> dict[str, ParadigmLayout]:
+    def _layout_sizes_or_raise(self, paradigm_name) -> ParadigmLayout:
         """
         Returns the sizes of the paradigm with the given name.
 
