@@ -7,8 +7,6 @@ from __future__ import annotations
 import logging
 import re
 import string
-import urllib
-import requests
 from itertools import zip_longest
 from typing import Collection, Iterable, Mapping, Optional, Sequence, TextIO
 
