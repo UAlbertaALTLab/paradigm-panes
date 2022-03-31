@@ -5,7 +5,7 @@ built for [itwêwina](https://itwewina.altlab.app/).
 
 # PyPi Package
 
-Latest version of the package posted to PyPi: [paradigm-panes 0.3.0](https://pypi.org/project/paradigm-panes/)
+Latest version of the package posted to PyPi: [paradigm-panes 0.3.1](https://pypi.org/project/paradigm-panes/)
 
 # Install
 
