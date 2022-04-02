@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "paradigm-panes"
-version = "0.3.1"
+version = "0.3.2"
 description = "Paradigm panes meant to provide layout specification to be reused elsewhere."
 authors = ["Uladzimir Bondarau <bondarau@ualberta.ca>"] # TODO
 maintainers = []
