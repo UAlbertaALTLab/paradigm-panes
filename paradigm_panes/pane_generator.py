@@ -124,7 +124,7 @@ class PaneGenerator:
                 if row.is_header:
                     tr_rows.append({
                         "is_header": True,
-                        "label": json.dumps(row.fst_tags),
+                        "label": row.fst_tags,
                         "cells": []
                     })
                 else:
@@ -140,7 +140,7 @@ class PaneGenerator:
 
                         if cell_data["is_label"]:
                             cell_data["label_for"] = cell.label_for
-                            cell_data["label"] = json.dumps(cell.fst_tags)
+                            cell_data["label"] = cell.fst_tags
 
                             if type(cell_data["label_for"]) != str:  # if cell.label_for was never instantiated
                                 cell_data["label_for"] = ""
