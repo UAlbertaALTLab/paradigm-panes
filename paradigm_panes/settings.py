@@ -15,20 +15,23 @@ STRICT_GENERATOR_FST_FILEPATH = ""
 LAYOUTS_DIR = ""
 TAG_STYLE = "Plus"
 
+
 class FileDoesNotMatch(Exception):
     """
     Raised when file cannot be found or does not match .hfstol extension
     """
 
+
 def set_fst_filepath(filepath: str) -> None:
     """
     Set a path to FST file
     """
-    if (Path(filepath).is_file() and Path(filepath).match("*.hfstol")):
+    if Path(filepath).is_file() and Path(filepath).match("*.hfstol"):
         global STRICT_GENERATOR_FST_FILEPATH
         STRICT_GENERATOR_FST_FILEPATH = filepath
     else:
         raise FileDoesNotMatch(f"file {Path(filepath).as_posix()!r} does not exist or does not end in \".hfstol\".")
+
 
 def get_fst_filepath() -> str:
     """
@@ -36,26 +39,30 @@ def get_fst_filepath() -> str:
     """
     return STRICT_GENERATOR_FST_FILEPATH
 
+
 class DirectoryDoesNotExist(Exception):
     """
     Raised when directory with paradigm layouts is missing
     """
 
+
 def set_layouts_dir(dir_path: str) -> None:
     """
     Set a directory with paradigm layouts
     """
-    if (Path(dir_path).is_dir()):
+    if Path(dir_path).is_dir():
         global LAYOUTS_DIR
         LAYOUTS_DIR = dir_path
     else:
         raise DirectoryDoesNotExist(f"Directory {dir_path!r} does not exist.")
+
 
 def get_layouts_dir() -> str:
     """
     Get a directory with paradigm layouts
     """
     return LAYOUTS_DIR
+
 
 def is_setup_complete():
     """
@@ -75,6 +82,7 @@ def set_tag_style(tag_style: str) -> None:
     """
     global TAG_STYLE
     TAG_STYLE = tag_style
+
 
 def get_tag_style() -> str:
     """

@@ -106,7 +106,7 @@ class ParadigmLayout(Paradigm):
 
     def dumps(self):
         """
-        Export the layout as a string. This string can be by .loads().
+        Export the layout as a string. This string can be read by .loads().
         """
 
         pane_text = []

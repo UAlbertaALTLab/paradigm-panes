@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Collection, Iterable, Optional, Protocol
 
 from . import settings
+from .pane_generator import serialize_paradigm
 
 from .panes import Paradigm, ParadigmLayout
 
@@ -56,7 +57,7 @@ class ParadigmManager:
 
         if size not in layout_sizes:
             raise ParadigmDoesNotExistError(f"size {size!r} for {paradigm_name}")
-        layout = layout_sizes[size]
+        layout = serialize_paradigm(layout_sizes)[size]
 
         if lemma is not None:
             return self._inflect(layout, lemma)
@@ -69,7 +70,7 @@ class ParadigmManager:
 
         :raises ParadigmDoesNotExistError: when the paradigm name cannot be found.
         """
-        return self._layout_sizes_or_raise(paradigm_name).keys()
+        return serialize_paradigm(self._layout_sizes_or_raise(paradigm_name)).keys()
 
     def all_analyses(self, paradigm_name: str, lemma: str) -> set[str]:
         """
@@ -83,7 +84,7 @@ class ParadigmManager:
         """
 
         analyses: set[str] = set()
-        for layout in self._layout_sizes_or_raise(paradigm_name).values():
+        for layout in serialize_paradigm(self._layout_sizes_or_raise(paradigm_name)).values():
             analyses.update(layout.generate_fst_analyses(lemma).values())
 
         return analyses
@@ -132,7 +133,7 @@ class ParadigmManager:
         string.
         """
         ret = {}
-        for layout in self._name_to_layout[paradigm_name].values():
+        for layout in serialize_paradigm(self._name_to_layout[paradigm_name]).values():
             # The trick here is that we can look for a literal `${lemma}`
             # instead of having to parse arbitrary FST analyses.
             for template in layout.generate_fst_analyses("${lemma}"):
@@ -272,7 +273,7 @@ def _load_all_sizes_for_paradigm(directory: Path):
 
 
 def _load_layout_file(layout_file: Path):
-    return ParadigmLayout.loads(layout_file.read_text(encoding="UTF-8"))
+    return ParadigmLayout.loads(Path(layout_file).read_text(encoding="UTF-8"))
 
 
 class Transducer(Protocol):

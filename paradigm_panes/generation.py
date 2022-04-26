@@ -32,6 +32,7 @@ def default_paradigm_manager() -> ParadigmManager:
     else:
         return ParadigmManager(layout_dir, generator)
 
+
 def strict_generator():
     """
     FST file to do translations
@@ -40,7 +41,7 @@ def strict_generator():
     try:
         return TransducerFile(path)
     except Exception as error:
-        if (str(error).split(":")[0] == 'Transducer not found'):
+        if str(error).split(":")[0] == 'Transducer not found':
             raise Exception(str(error).split(":")[0] + f' in \"{path}\"')
         else:
             raise Exception(str(error))
