@@ -93,6 +93,20 @@ class PaneGenerator:
         settings.set_fst_filepath(path)
 
     @staticmethod
+    def set_morpheme_fst_filepath(path: str) -> None:
+        """
+        Set fst resource location
+        """
+        settings.set_morpheme_fst_filepath(path)
+
+    @staticmethod
+    def set_analyser_fst_filepath(path: str) -> None:
+        """
+        Set fst resource location
+        """
+        settings.set_analyser_fst_filepath(path)
+
+    @staticmethod
     def set_layouts_dir(path: str) -> None:
         """
         Set layouts resources location

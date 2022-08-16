@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "paradigm-panes"
-version = "0.3.2"
+version = "0.3.3"
 description = "Paradigm panes meant to provide layout specification to be reused elsewhere."
 authors = ["Uladzimir Bondarau <bondarau@ualberta.ca>"] # TODO
 maintainers = []
@@ -19,7 +19,6 @@ python = "^3.9"
 more-itertools = "~=8.7.0"
 hfst-optimized-lookup = "~=0.0.13"
 typing-extensions = "~=3.7"
-pathlib = "*"
 
 # extra
 # sudo apt-get install -y hfst

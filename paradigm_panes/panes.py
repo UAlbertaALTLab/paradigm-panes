@@ -11,6 +11,9 @@ from itertools import zip_longest
 from typing import Collection, Iterable, Mapping, Optional, Sequence, TextIO
 
 from more_itertools import ilen, one
+from hfst_optimized_lookup import TransducerFile, Analysis
+
+from paradigm_panes.settings import STRICT_GENERATOR_FST_FILEPATH, STRICT_ANALYSER_FST_FILEPATH, STRICT_GENERATOR_FST_WITH_MORPHEMES_FILEPATH
 
 logger = logging.getLogger(__name__)
 
@@ -518,12 +521,20 @@ class WordformCell(Cell):
     def __init__(self, inflection: str):
         self.inflection = inflection
         self.recording = None
+        self.morphemes = None
+        self.add_morphemes()
 
     def contains_wordform(self, wordform: str) -> bool:
         return self.inflection == wordform
 
     def add_recording(self, recording):
         self.recording = recording
+
+    def add_morphemes(self):
+        analysis = rich_analyze_strict(self.inflection)
+        if analysis:
+            analysis = analysis[0]
+            self.morphemes = analysis.generate_with_morphemes(self.inflection)
 
     def fill(self, forms: Mapping[str, Collection[str]]) -> tuple[Cell, ...]:
         # No need to fill a cell that already has contents!
@@ -802,3 +813,88 @@ def adjust_row_span(cell: Cell, span: int) -> Cell:
     if isinstance(cell, RowLabel):
         return cell.with_row_span(span)
     return cell
+
+def rich_analyze_strict(text):
+    return list(
+        RichAnalysis(r) for r in TransducerFile(STRICT_ANALYSER_FST_FILEPATH).lookup_lemma_with_affixes(text)
+    )
+
+
+class RichAnalysis:
+    """The one true FST analysis class.
+
+    Put all your methods for dealing with things like `PV/e+nipâw+V+AI+Cnj+3Pl`
+    here.
+    """
+
+    def __init__(self, analysis):
+        if isinstance(analysis, Analysis):
+            self._tuple = analysis
+        elif (isinstance(analysis, list) or isinstance(analysis, tuple)) and len(
+            analysis
+        ) == 3:
+            prefix_tags, lemma, suffix_tags = analysis
+            self._tuple = Analysis(
+                prefixes=tuple(prefix_tags), lemma=lemma, suffixes=tuple(suffix_tags)
+            )
+        else:
+            raise Exception(f"Unsupported argument: {analysis=!r}")
+
+    @property
+    def tuple(self):
+        return self._tuple
+
+    @property
+    def lemma(self):
+        return self._tuple.lemma
+
+    @property
+    def prefix_tags(self):
+        return self._tuple.prefixes
+
+    @property
+    def suffix_tags(self):
+        return self._tuple.suffixes
+
+    def generate(self):
+        return STRICT_GENERATOR_FST_FILEPATH().lookup(self.smushed())
+
+    def generate_with_morphemes(self, inflection):
+        try:
+            results = TransducerFile(STRICT_GENERATOR_FST_WITH_MORPHEMES_FILEPATH).lookup(self.smushed())
+            if len(results) != 1:
+                for result in results:
+                    if "".join(re.split(r"[<>]", result)) == inflection:
+                        return re.split(r"[<>]", result)
+                return None
+            return re.split(r"[<>]", results[0])
+        except RuntimeError as e:
+            print("Could not generate morphemes:", e)
+            return []
+
+    def smushed(self):
+        return "".join(self.prefix_tags) + self.lemma + "".join(self.suffix_tags)
+
+    def tag_set(self):
+        return set(self.suffix_tags + self.prefix_tags)
+
+    def tag_intersection_count(self, other):
+        """How many tags does this analysis have in common with another?"""
+        if not isinstance(other, RichAnalysis):
+            raise Exception(f"Unsupported argument: {other=!r}")
+        return len(self.tag_set().intersection(other.tag_set()))
+
+    def __iter__(self):
+        """Allows doing `head, _, tail = rich_analysis`"""
+        return iter(self._tuple)
+
+    def __hash__(self):
+        return hash(self._tuple)
+
+    def __eq__(self, other):
+        if not isinstance(other, RichAnalysis):
+            return NotImplemented
+        return self._tuple == other.tuple
+
+    def __repr__(self):
+        return f"RichAnalysis({[self.prefix_tags, self.lemma, self.suffix_tags]!r})"

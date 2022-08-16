@@ -12,6 +12,8 @@ MORPHODICT_PARADIGM_SIZES = [
 ]
 
 STRICT_GENERATOR_FST_FILEPATH = ""
+STRICT_GENERATOR_FST_WITH_MORPHEMES_FILEPATH = ""
+STRICT_ANALYSER_FST_FILEPATH = ""
 LAYOUTS_DIR = ""
 TAG_STYLE = "Plus"
 
@@ -29,6 +31,28 @@ def set_fst_filepath(filepath: str) -> None:
     if Path(filepath).is_file() and Path(filepath).match("*.hfstol"):
         global STRICT_GENERATOR_FST_FILEPATH
         STRICT_GENERATOR_FST_FILEPATH = filepath
+    else:
+        raise FileDoesNotMatch(f"file {Path(filepath).as_posix()!r} does not exist or does not end in \".hfstol\".")
+
+
+def set_morpheme_fst_filepath(filepath: str) -> None:
+    """
+        Set a path to the morpheme generation FST file
+        """
+    if Path(filepath).is_file() and Path(filepath).match("*.hfstol"):
+        global STRICT_GENERATOR_FST_WITH_MORPHEMES_FILEPATH
+        STRICT_GENERATOR_FST_WITH_MORPHEMES_FILEPATH = filepath
+    else:
+        raise FileDoesNotMatch(f"file {Path(filepath).as_posix()!r} does not exist or does not end in \".hfstol\".")
+
+
+def set_analyser_fst_filepath(filepath: str) -> None:
+    """
+        Set a path to the morpheme generation FST file
+        """
+    if Path(filepath).is_file() and Path(filepath).match("*.hfstol"):
+        global STRICT_ANALYSER_FST_FILEPATH
+        STRICT_ANALYSER_FST_FILEPATH = filepath
     else:
         raise FileDoesNotMatch(f"file {Path(filepath).as_posix()!r} does not exist or does not end in \".hfstol\".")
 
