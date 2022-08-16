@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Collection, Iterable, Optional, Protocol
 
 from . import settings
-from .helpers import serialize_paradigm
+from .pane_generator import serialize_paradigm
 
 from .panes import Paradigm, ParadigmLayout
 
@@ -57,7 +57,7 @@ class ParadigmManager:
 
         if size not in layout_sizes:
             raise ParadigmDoesNotExistError(f"size {size!r} for {paradigm_name}")
-        layout = layout_sizes[size]
+        layout = serialize_paradigm(layout_sizes)[size]
 
         if lemma is not None:
             return self._inflect(layout, lemma)
@@ -70,7 +70,7 @@ class ParadigmManager:
 
         :raises ParadigmDoesNotExistError: when the paradigm name cannot be found.
         """
-        return self._layout_sizes_or_raise(paradigm_name).keys()
+        return serialize_paradigm(self._layout_sizes_or_raise(paradigm_name)).keys()
 
     def all_analyses(self, paradigm_name: str, lemma: str) -> set[str]:
         """
