@@ -1,22 +1,16 @@
 from __future__ import annotations
 
 import logging
-import re
+import csv
 from pathlib import Path
-from typing import Collection, Iterable, Optional, Protocol
+from typing import Dict
 
-from . import settings
-from .helpers import serialize_paradigm
-
-from .panes import Paradigm, ParadigmLayout
-
-# I would *like* a singleton for this, but, currently, it interacts poorly with mypy :/
-ONLY_SIZE = "<only-size>"
+from hfst_optimized_lookup import TransducerFile
 
 logger = logging.getLogger(__name__)
 
 
-class ParadigmDoesNotExistError(Exception):
+class ParadigmNotSetError(Exception):
     """
     Raised when a paradigm is requested, but does not exist.
     """
@@ -33,256 +27,120 @@ class ParadigmManager:
     # Mappings of paradigm name => sizes available => the layout
     _name_to_layout: dict[str, dict[str, ParadigmLayout]]
 
-    def __init__(self, layout_directory: Path, generation_fst: Transducer):
-        self._generator = generation_fst
-        self._name_to_layout: dict[str, ParadigmLayout] = {}
+    def __init__(self, layout_directory: Path, generation_fst: Path):
+        self.layout_directory = Path(layout_directory)
+        self.generation_fst = generation_fst
+        self.paradigm = None
+        self.lemma = None
+        self.all_wordforms = []
+        self.generated_paradigm = None
 
-        self._load_layouts_from(layout_directory)
+    def set_lemma(self, lemma: str):
+        self.lemma = lemma
 
-    def paradigm_for(
-        self,
-        paradigm_name: str,
-        lemma: Optional[str] = None,
-        size: Optional[str] = None,
-    ) -> Paradigm:
+    def get_lemma(self) -> str:
+        return self.lemma
+
+    def set_paradigm(self, paradigm: str):
+        self.paradigm = paradigm
+
+    def get_paradigm(self) -> str:
+        return self.paradigm
+
+    def add_wordform(self, wordform: str):
+        self.all_wordforms.append(wordform)
+
+    def get_all_wordforms(self) -> list:
+        return self.all_wordforms
+
+    def get_generated_paradigm(self):
+        return self.generated_paradigm
+
+    def bulk_add_recordings(self, recordings: Dict[str,str]) -> Dict:
+        """ Input recordings object has form:
+            {"inflection": recording,...}
         """
-        Returns a paradigm for the given paradigm name. If a lemma is given, this is
-        substituted into the dynamic paradigm.
+        for header in self.generated_paradigm:
+            entry = self.generated_paradigm[header]
+            for i, row in enumerate(entry["rows"]):
+                if "inflections" not in row:
+                    continue
+                inflections = row["inflections"]
+                for inflection in inflections:
+                    wf = inflection["wordform"]
+                    if wf not in recordings:
+                        continue
+                    recording = recordings[wf]["recording_url"]
+                    inflection["recording"] = recording
+        return self.generated_paradigm
 
-        :raises ParadigmDoesNotExistError: when the paradigm name cannot be found.
-        """
-        layout_sizes = self._layout_sizes_or_raise(paradigm_name)
-        if size is None:
-            size = self.default_size(paradigm_name)
+    def get_layout_file(self) -> Path:
+        files = self.layout_directory.glob('*.tsv')
+        for file in files:
+            if file.name == f"{self.paradigm}.tsv":
+                return file
+        return FileNotFoundError
 
-        if size not in layout_sizes:
-            raise ParadigmDoesNotExistError(f"size {size!r} for {paradigm_name}")
-        layout = layout_sizes[size]
+    @staticmethod
+    def clean_line(line):
+        ret_line = []
+        for l in line:
+            if l:
+                ret_line.append(l)
+        return ret_line
 
-        if lemma is not None:
-            return self._inflect(layout, lemma)
-        else:
-            return layout.as_static_paradigm()
-
-    def sizes_of(self, paradigm_name: str) -> Collection[str]:
-        """
-        Returns the size options of the given paradigm.
-
-        :raises ParadigmDoesNotExistError: when the paradigm name cannot be found.
-        """
-        return self._layout_sizes_or_raise(paradigm_name).keys()
-
-    def all_analyses(self, paradigm_name: str, lemma: str) -> set[str]:
-        """
-        Returns all analysis strings for a given paradigm and lemma in all layout sizes.
-
-        For example, in Plains Cree, you want all analyses for mîcisow (VAI):
-
-            {"mîcisow+V+AI+Ind+Prs+1Sg", "mîcisow+V+AI+Ind+Prs+2Sg", ...}
-
-        :raises ParadigmDoesNotExistError: when the paradigm name cannot be found.
-        """
-
-        analyses: set[str] = set()
-        for layout in serialize_paradigm(self._layout_sizes_or_raise(paradigm_name)).values():
-            analyses.update(layout.generate_fst_analyses(lemma).values())
-
-        return analyses
-
-    def default_size(self, paradigm_name: str):
-        sizes = list(self.sizes_of(paradigm_name))
-        return sizes[0]
-
-    def _layout_sizes_or_raise(self, paradigm_name) -> ParadigmLayout:
-        """
-        Returns the sizes of the paradigm with the given name.
-
-        :raises ParadigmDoesNotExistError: when the paradigm name cannot be found.
-        """
-        try:
-            return self._name_to_layout[paradigm_name]
-        except KeyError:
-            raise ParadigmDoesNotExistError(paradigm_name)
-
-    def _load_layouts_from(self, path: Path):
-        """
-        Loads all .tsv files in the path as paradigm layouts.
-
-        Does nothing if the directory does not exist.
-        """
-        if not Path(path).exists():
-            logger.debug("No layouts found in %s", path)
-            return
-
-        for paradigm_name, size, layout in _load_all_layouts_in_directory(path):
-            # .setdefault() creates a new, empty dict if the paradigm name does not
-            # exist yet:
-            self._name_to_layout.setdefault(paradigm_name, {})[size] = layout
-
-    _LITERAL_LEMMA_RE = re.compile(r"\$\{lemma\}")
-
-    def all_analysis_template_tags(self, paradigm_name) -> Collection[tuple]:
-        """Return the set of all analysis templates in layouts of paradigm_name
-
-        If a paradigm has two sizes, one with template `${lemma}+A` and the
-        other with both `${lemma}+A` and `X+${lemma}+B`, then this function will
-        return {((), ("+A",)), (("X+",), ("+B",)}.
-
-        Note that these analyses are meant to be inputs to a generator FST for
-        building a paradigm table, not the results of analyzing some input
-        string.
-        """
-        ret = {}
-        for layout in serialize_paradigm(self._name_to_layout[paradigm_name]).values():
-            # The trick here is that we can look for a literal `${lemma}`
-            # instead of having to parse arbitrary FST analyses.
-            for template in layout.generate_fst_analyses("${lemma}"):
-                prefix, suffix = self._LITERAL_LEMMA_RE.split(template)
-
-                if settings.get_tag_style() == "Plus":
-                    prefix_tags = prefix.split("+")
-                    assert (
-                        prefix_tags[-1] == ""
-                    ), f"Prefix {prefix!r} did not end with +"
-                    suffix_tags = suffix.split("+")
-                    assert suffix_tags[0] == "", f"Suffix {suffix!r} did not end with +"
-                    ret[template] = (
-                        tuple(t + "+" for t in prefix_tags[:-1]),
-                        tuple("+" + t for t in suffix_tags[1:]),
-                    )
-                elif settings.get_tag_style() == "Bracket":
-                    ret[template] = (split_brackets(prefix), split_brackets(suffix))
-                else:
-                    raise Exception(f"Unsupported {settings.get_tag_style()=!r}")
-        return ret.values()
-
-    def _inflect(self, layout: ParadigmLayout, lemma: str) -> Paradigm:
-        """
-        Given a layout and a lemma, produce a paradigm with forms generated by the FST.
-        """
-        template2analysis = layout.generate_fst_analyses(lemma=lemma)
-        analysis2forms = self._generator.bulk_lookup(list(template2analysis.values()))
-        template2forms = {
-            template: analysis2forms[analysis]
-            for template, analysis in template2analysis.items()
+    def generate(self) -> dict:
+        """Takes in no arguments, assumes all arguments have been set already
+        Returns the generated paradigm of the form:
+        {
+            <header>: {
+                rows: [
+                    {subheader: optional_subheader, label: label, inflections: [inflections], recording: optional_recording}
+                ]
+            },
+            <header_2>: {
+                ...
+            }
         }
-        return layout.fill(template2forms)
-
-
-_BRACKET_SEPATOR_RE = re.compile(
-    r"""
-            # regex to match the zero-width pattern in the middle of "]["
-            (?<= # look-behind
-                \] # literal ]
-            )
-            (?= # look-ahead
-                \[ # literal [
-            )
-           """,
-    re.VERBOSE,
-)
-
-
-def split_brackets(s):
-    if s == "":
-        return []
-    return _BRACKET_SEPATOR_RE.split(s)
-
-
-class ParadigmManagerWithExplicitSizes(ParadigmManager):
-    """
-    A ParadigmManager but its sizes are always returned, sorted according the explicit
-    order specified.
-    """
-
-    def __init__(
-        self,
-        layout_directory: Path,
-        generation_fst: Transducer,
-        *,
-        ordered_sizes: list[str],
-    ):
-        super().__init__(layout_directory, generation_fst)
-        self._size_to_order = {
-            element: index for index, element in enumerate(ordered_sizes)
-        }
-
-    def sizes_of(self, paradigm_name: str) -> Collection[str]:
-        unsorted_results = super().sizes_of(paradigm_name)
-        if len(unsorted_results) <= 1:
-            return unsorted_results
-        return sorted(unsorted_results, key=self._sort_by_explict_order)
-
-    def _sort_by_explict_order(self, element: str) -> int:
         """
-        Orders elements according to the given ordered sizes.
-        Can be used as a key function for sort() or sorted().
-        """
-        return self._size_to_order[element]
+        generated_paradigm = dict()
+        layout_file = self.get_layout_file()
+        transducer_file = TransducerFile(self.generation_fst)
+        most_recent_header = ""
+        header_and_index = dict()
 
-    def all_sizes_fully_specified(self):
-        """
-        Returns True when all size options for all paradigms are specified in the
-        explicit order given in the constructor.
-        """
-        valid_sizes = {ONLY_SIZE} | self._size_to_order.keys()
-        all_paradigms = self._name_to_layout.keys()
+        with open(layout_file) as file:
+            layout_file_lines = csv.reader(file, delimiter="\t")
 
-        for paradigm in all_paradigms:
-            # use super() to avoid any ordering stuff.
-            sizes_available = super().sizes_of(paradigm)
-            for size in sizes_available:
-                if size not in valid_sizes:
-                    logger.error(
-                        "Paradigm %r has a layout in size %r, however that "
-                        "size has not been declared",
-                        paradigm,
-                        size,
-                    )
-                    return False
+            for line in layout_file_lines:
+                line = self.clean_line(line)
+                if not line:
+                    continue
+                for i, el in enumerate(line):
+                    if el.startswith("*"):
+                        header_and_index[i+1] = el
+                        generated_paradigm[el] = {"rows": []}
+                        most_recent_header = el
+                    elif el.startswith("|"):
+                        subheader = el.replace("| ", "")
+                        generated_paradigm[most_recent_header]["rows"].append({"subheader": subheader})
+                    elif el.startswith("_"):
+                        continue
+                    else:
+                        header = header_and_index[i]
+                        person = line[0].replace("_ ", "")
+                        fst_input = el.replace("${lemma}", self.lemma)
+                        inflections = transducer_file.lookup(fst_input)
+                        if not inflections:
+                            all_inflections = [{"wordform": "--"}]
+                        else:
+                            all_inflections = []
+                            for wf in inflections:
+                                self.all_wordforms.append(wf)
+                                inflections_object = dict()
+                                inflections_object["wordform"] = wf
+                                all_inflections.append(inflections_object)
+                        generated_paradigm[header]["rows"].append({"label": person, "inflections": all_inflections})
 
-        return True
-
-
-def _load_all_layouts_in_directory(path: Path):
-    """
-    Yields (paradigm, size, layout) tuples from the given directory. Immediate
-    subdirectories are assumed to be paradigms with multiple size options.
-    """
-    assert Path(path).is_dir()
-
-    for filename in Path(path).iterdir():
-        if Path(filename).is_dir():
-            yield from _load_all_sizes_for_paradigm(filename)
-        elif Path(filename).match("*.tsv"):
-            yield Path(filename).stem, ONLY_SIZE, _load_layout_file(filename)
-
-
-def _load_all_sizes_for_paradigm(directory: Path):
-    """
-    Yields (paradigm, size, layout) tuples for ONE paradigm name. The paradigm name
-    is inferred from the directory name.
-    """
-    paradigm_name = directory.name
-    assert directory.is_dir()
-
-    for layout_file in directory.glob("*.tsv"):
-        size = layout_file.stem
-        assert size != ONLY_SIZE, f"size name cannot clash with sentinel value: {size}"
-        yield paradigm_name, size, _load_layout_file(layout_file)
-
-
-def _load_layout_file(layout_file: Path):
-    return ParadigmLayout.loads(Path(layout_file).read_text(encoding="UTF-8"))
-
-
-class Transducer(Protocol):
-    """
-    Interface for something that can lookup forms in bulk.
-
-    This is basically the subset of the hfst_optimized_lookup.TransducerFile API that
-    the paradigm manager actually uses.
-    """
-
-    def bulk_lookup(self, strings: Iterable[str]) -> dict[str, set[str]]:
-        ...
+        self.generated_paradigm = generated_paradigm
+        return generated_paradigm

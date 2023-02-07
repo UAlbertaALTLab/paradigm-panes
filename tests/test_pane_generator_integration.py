@@ -38,7 +38,7 @@ def test_paradigm(pardigm_gen, name, lemma, examples: list[str]):
     Test paradigm panes generates based on default size, lemma and paradirm name and
     matches an extract of data above. Checks the paradigm itself, not serialization.
     """
-    paradigm = pardigm_gen._crete_paradigm(lemma=lemma, paradigm_type=name)
+    paradigm = pardigm_gen._create_paradigm(lemma=lemma, paradigm_type=name)
 
     for form in examples:
         assert paradigm.contains_wordform(form)
@@ -54,7 +54,7 @@ def test_generates_na_paradigm_default_size(pardigm_gen) -> None:
     inflections = ["minôsa", "minôsak", "niminôs"]
     inflections_full = ["ominôsiyiwa", "kiminôsiwâwak", "minôsinâhk"]
 
-    paradigm = pardigm_gen._crete_paradigm(lemma, word_class)
+    paradigm = pardigm_gen._create_paradigm(lemma, word_class)
 
     for form in inflections:
         assert paradigm.contains_wordform(form)
@@ -70,7 +70,7 @@ def test_generates_wrong_spec_paradigm_missing(pardigm_gen) -> None:
     word_class = "VAI"
     inflections = ["minôsa", "minôsak", "niminôs"]
 
-    paradigm = pardigm_gen._crete_paradigm(lemma, word_class)
+    paradigm = pardigm_gen._create_paradigm(lemma, word_class)
 
     for form in inflections:
         assert not paradigm.contains_wordform(form)
@@ -98,7 +98,7 @@ def test_generates_na_paradigm_full_size(pardigm_gen) -> None:
     inflections = ["minôsa", "minôsak", "niminôs", "ominôsiyiwa", "kiminôsiwâwak", "minôsinâhk"]
 
     size = "full"
-    paradigm = pardigm_gen._crete_paradigm(lemma, word_class, size)
+    paradigm = pardigm_gen._create_paradigm(lemma, word_class, size)
 
     for form in inflections:
         assert paradigm.contains_wordform(form)
@@ -114,7 +114,7 @@ def test_generates_na_paradigm_wrong_size(pardigm_gen) -> None:
     inflections_full = ["ominôsiyiwa", "kiminôsiwâwak", "minôsinâhk"]
 
     size = "wrongsize"
-    paradigm = pardigm_gen._crete_paradigm(lemma, word_class, size)
+    paradigm = pardigm_gen._create_paradigm(lemma, word_class, size)
 
     for form in inflections:
         assert paradigm.contains_wordform(form)
