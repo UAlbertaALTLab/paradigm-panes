@@ -16,24 +16,56 @@ class ParadigmNotSetError(Exception):
     """
 
 
+class FstFileNotProvidedError(Exception):
+    """
+    Raised when the manager is instantiated without an FST path
+    """
+
+
+class FstNotValidError(Exception):
+    """
+    Raised when the manager is called with an invalid FST path
+    """
+
+
+class LayoutDirectoryNotProvidedError(Exception):
+    """
+    Raised when the manager is instantiated without a layout directory
+    """
+
+
+class LayoutDirectoryNotValidError(Exception):
+    """
+    Raised when the layout directory is not a real directory
+    """
+
+
+
 class ParadigmManager:
     """
-    Mediates access to paradigms layouts.
+    Everything you need to get from layout files and a generator FST to a full on paradigm layout.
 
-    Loads layouts from the filesystem and can fill the layout with results from a
-    (normative/strict) generator FST.
     """
 
-    # Mappings of paradigm name => sizes available => the layout
-    _name_to_layout: dict[str, dict[str, ParadigmLayout]]
-
     def __init__(self, layout_directory: Path, generation_fst: Path):
+        self.perform_checks(layout_directory, generation_fst)
         self.layout_directory = Path(layout_directory)
         self.generation_fst = generation_fst
         self.paradigm = None
         self.lemma = None
         self.all_wordforms = []
         self.generated_paradigm = None
+
+    @staticmethod
+    def perform_checks(layout_directory, generation_fst):
+        if not layout_directory:
+            raise LayoutDirectoryNotProvidedError
+        if not generation_fst:
+            raise FstFileNotProvidedError
+        if not Path(layout_directory).is_dir():
+            raise LayoutDirectoryNotValidError
+        if not Path(generation_fst).is_file():
+            raise FstNotValidError
 
     def set_lemma(self, lemma: str):
         self.lemma = lemma
@@ -79,7 +111,7 @@ class ParadigmManager:
         for file in files:
             if file.name == f"{self.paradigm}.tsv":
                 return file
-        return FileNotFoundError
+        raise FileNotFoundError
 
     @staticmethod
     def clean_line(line):
@@ -136,7 +168,7 @@ class ParadigmManager:
                         else:
                             all_inflections = []
                             for wf in inflections:
-                                self.all_wordforms.append(wf)
+                                self.add_wordform(wf)
                                 inflections_object = dict()
                                 inflections_object["wordform"] = wf
                                 all_inflections.append(inflections_object)
